@@ -1,0 +1,89 @@
+#!/usr/bin/env zsh
+# devuan-core.blend
+
+
+BLENDPATH="${BLENDPATH:-$(dirname $0)}"
+
+source $BLENDPATH/config
+
+blend_preinst() {
+	fn blend_preinst
+	req=(strapdir blend release)
+	ckreq || return 1
+
+	notice "executing ${BLENDPATH##*/} preinst"
+	
+}
+
+blend_postinst() {
+	fn blend_postinst
+	req=(strapdir blend os release)
+	ckreq || return 1
+
+	notice "executing ${BLENDPATH##*/} postinst"	
+	
+	pushd $BLENDPATH/rootfs-overlay
+		dirs=$(ls -l | awk '{print $9}')
+	popd
+	echo $dirs > $workdir/tmp_$$
+	# Remove lines in blank:
+	cat $workdir/tmp_$$ | sed '/^ *$/d' > $workdir/dirs_$$
+	
+	for i in $(cat $workdir/dirs_$$); do
+		echo $i
+		mkdir -p $strapdir/$i
+		rsync -avx --no-o --no-g $BLENDPATH/rootfs-overlay/$i/* $strapdir/$i
+	done
+	
+	# Remove temp files:
+	rm -rf $workdir/tmp_$$ $workdir/dirs_$$
+	
+	chmod -R 755 $strapdir/etc/live/config.conf
+	
+	for line in `find $BLENDPATH/rootfs-overlay/usr/bin -name "*" ! -name 'bin'`; do
+		chmod -R 655 $strapdir/usr/bin/${line##*/}
+	done
+
+	for line in `find $BLENDPATH/rootfs-overlay/lib/live/config -name "*" ! -name 'config'`; do
+		chmod -R 700 $strapdir/lib/live/config/${line##*/}
+	done
+
+}
+
+blend_finalize() {
+	fn blend_finalize
+	req=(R strapdir os mirror release)
+	ckreq || return 1
+
+	notice "executing $blend finalize"
+	
+	#cp -av $R/blends/$blend/dselect/pkglist.txt                    $strapdir/tmp/
+	
+	sed -i '12i Defaults    env_reset , timestamp_timeout = 0' $strapdir/etc/sudoers	
+
+	echo \
+"127.0.0.1       ${os}                localhost
+::1              localhost            ip6-localhost ip6-loopback
+fe00::0          ip6-localnet
+fe00::0          ip6-mcastprefix
+fe02::1          ip6-allnodes
+fe02::1          ip6-allrouters" > $strapdir/etc/hosts
+
+	cat <<EOF | sudo tee ${strapdir}/finalize >/dev/null
+#!/bin/sh
+
+	echo \
+"
+	echo \"
+deb ${mirror} ${release} ${section}
+deb-src ${mirror} ${release} ${section}
+\" > /etc/apt/sources.list
+
+" >> /usr/bin/preseed-hack
+
+EOF
+
+	chroot-script -d finalize || zerr
+	
+}
+

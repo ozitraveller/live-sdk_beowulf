@@ -1,0 +1,68 @@
+#!/usr/bin/env zsh
+# Copyright (c) 2016-2017 Dyne.org Foundation
+# live-sdk is written and maintained by Ivan J. <parazyd@dyne.org>
+#
+# This file is part of live-sdk
+#
+# This source code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this source code. If not, see <http://www.gnu.org/licenses/>.
+
+
+## live-sdk configuration
+## ----------------------
+
+MAKEOPTS="-j$(grep -c 'processor' /proc/cpuinfo)"
+
+# Set values:
+os="devuan"
+url="deb.devuan.org"
+root="/merged"
+release="beowulf"
+version="3.1.0"
+suite="stable"
+section="main contrib non-free"
+arch="amd64" 
+blend="star-openbox"
+release_name="spock"
+# derivative="star"
+PAE=0              ## Only required for i386
+PROPOSED_UPDATES=1
+ISOHYBRID=1
+# INTERACTIVE=1
+
+
+## common packages for all images
+core_packages+=(
+	
+	devuan-keyring
+	debian-keyring
+	ca-certificates
+	libc6
+	libc-bin
+	initramfs-tools
+	sysvinit
+	sysvinit-core
+	sysvinit-utils
+	
+)
+
+base_packages+=(
+
+	base-files
+	lsb-base
+	adduser
+	linux-base
+	sudo
+	apt-utils
+	
+)

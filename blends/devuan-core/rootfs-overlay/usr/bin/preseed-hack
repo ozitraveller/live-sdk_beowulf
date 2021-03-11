@@ -1,0 +1,36 @@
+#!/bin/bash
+
+dpkg --purge live-boot live-tools live-config live-config-sysvinit live-boot-initramfs-tools
+rm -rf /etc/live /lib/live
+
+declare -a line
+
+if grep "^/dev/sd" /etc/fstab | grep "/media/" | grep "auto"; then
+    line=`grep "^/dev/sd" /etc/fstab | grep "/media/" | grep "auto"`
+    sed -i -e "s|${line}||" /etc/fstab
+fi
+unset line
+
+if grep "^/dev/sr" /etc/fstab | grep "/media/cdrom"; then
+    line=`grep "^/dev/" /etc/fstab | grep "/media/cdrom"`
+    sed -i -e "s|${line}||" /etc/fstab
+fi
+unset line
+	
+	echo \
+"# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+allow-hotplug eth0
+iface eth0 inet dhcp
+
+allow-hotplug wlan0
+iface wlan0 inet dhcp
+" > /etc/network/interfaces
+

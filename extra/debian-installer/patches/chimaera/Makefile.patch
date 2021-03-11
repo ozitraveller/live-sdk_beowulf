@@ -1,0 +1,13 @@
+--- Makefile.orig	2020-10-20 11:22:43.000000000 +0200
++++ Makefile	2020-11-29 11:13:50.863716000 +0100
+@@ -534,7 +534,9 @@
+ 	mkdir -p $(TEMP)/udeblibs
+ 	find $(EXTRAUDEBSDIR)/lib \( -name '*.so.*' -o -name '*.so' \) -print0 | \
+ 		xargs -0r cp -a -t $(TEMP)/udeblibs
+-	find $(TREE)/lib \( -name '*.so.*' -o -name '*.so' \) -print0 | \
++	# HACK ALERT for i386 architecture: we exclude lib/ld-linux.so.2, also present in lib/i386-linux-gnu 
++	# (for amd64 they are located in /lib64 and /lib/x86_64-linux-gnu)
++	find $(TREE)/lib \( -name '*.so.*' -o -name '*.so' \) ! -path $(TREE)/lib/ld-linux.so.2 -print0 | \
+ 		xargs -0r cp -a -t $(TEMP)/udeblibs
+ 	mkdir -p $(TREE)/lib
+ 	# HACK ALERT: X.Org modules are excluded from the scan as mklibs

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=FileZilla
+GenericName=FTP client
+Exec=filezilla
+Terminal=false
+Icon=/usr/local/bin/images/filezilla.svg
+Type=Application
+Categories=Network;FileTransfer;
+Version=1.0

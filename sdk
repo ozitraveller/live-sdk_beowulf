@@ -1,0 +1,131 @@
+#!/usr/bin/env zsh
+# Copyright (c) 2016-2017 Dyne.org Foundation
+# live-sdk is written and maintained by Ivan J. <parazyd@dyne.org>
+#
+# This file is part of live-sdk
+#
+# This source code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this source code. If not, see <http://www.gnu.org/licenses/>.
+
+livesdk_version="0.2"
+
+R=${LIVE_SDK-$PWD}
+
+DEBUG=1
+QUIET=0
+
+source $R/lib/zuper/zuper
+
+## global vars
+vars+=(livesdk_version)
+vars+=(R workdir strapdir)
+vars+=(os url release root version suite section arch flavor oslib blendlib linux_path)
+vars+=(MAKEOPTS PAE)
+vars+=(core_packages base_packages extra_packages purge_packages)
+
+## global maps
+maps+=(os_map blend_map)
+
+source $R/config
+
+## conclude zuper initialization
+source $R/lib/zuper/zuper.init
+
+
+load() {
+	fn load "$@"
+	os="$1"
+	arch="$2"
+	blend="$3"
+		
+	req=()
+	ckreq || return 1
+
+
+
+  #~ [[ $# -eq 0 ]] && INTERACTIVE=1
+    #~ [[ $# -gt 0 ]] && {
+           
+        #~ while getopts a:b:r: flag
+        #~ do
+        #~ echo "flag: "${flag}
+            #~ case "${flag}" in
+                #~ a) readonly arch=${OPTARG:?"The arch must be specified."};;
+                #~ b) readonly blend=${OPTARG:?"The blend must be specified."};;
+                #~ r) readonly release_name=${OPTARG:?"The release must be specified."};;
+            #~ esac
+        #~ done
+    #~ }
+
+#~ echo "arch: "${arch}
+#~ echo "blend: "${blend}
+#~ echo "release_name: "${release_name}
+
+	
+	mirror="http://"$url$root
+	blendlib=$R/blends/$blend/$blend.blend
+	blendname=${blendlib%/*}
+	
+	rm -f Packages.gz Packages
+	wget $mirror/dists/$release/main/debian-installer/binary-$arch/Packages.gz
+	gzip -d Packages.gz
+
+	notice "[PWD] : ${PWD}"
+	
+	x=$(grep "^Filename: pool/" Packages | grep "/kernel-image" | grep "_$arch.udeb$" | sort -r | head -1)
+	abiname=$(echo $(basename -- "$x") | awk -F '-' '{ print $3"-"$4 ; }')
+	flavor=$(echo $(basename -- "$x") | awk -F '-' '{ print $5 ; }')
+
+	notice "[blendname] : ${blendname}"
+	notice "[abiname] : ${abiname}"
+		
+	y=${x%/*}
+	y=${y#*:}
+	len=$((${#y} - 1))
+	linux_path=${y:1:${len}}
+	
+	[[ $arch = "amd64" ]] && PAE=0;
+	[[ $suite != "stable" ]] && PROPOSED_UPDATES=0
+	[[ $PAE = 1 ]] && flavor=$flavor"-pae"
+	
+	case $arch in
+		amd64) 	earch=$flavor
+				;;
+		i386)	earch="i"$flavor
+				;;
+		*) error "invalid arch specified"; zerr;;
+	esac
+
+	chmod +x $R/lib/libdevuansdk/extra/debootstrap/debootstrap
+	
+	source $R/lib/libdevuansdk/libdevuansdk
+	
+	workdir="$R/tmp/${os}-${arch}-build"
+	strapdir="$workdir/bootstrap"	
+	
+	[[ -f $blendlib ]] && {
+		source $blendlib || zerr
+		act "$os blend strapdir loaded"
+		export BLEND=1
+	}
+	
+	rm -f Packages
+	
+	source $R/lib/zuper/zuper.init
+}
+
+
+TRAPZERR() { zerr; return $? }
+
+notice "live-sdk loaded"
+export PROMPT="%F{yellow}%(?..%? )%{$reset_color%}livesdk@%{$fg[red]%}%m %{$reset_color%} %{$fg[blue]%}%#%{$fg_bold[blue]%}%{$reset_color%} "

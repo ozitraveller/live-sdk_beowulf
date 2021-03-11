@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -x
+
+
+	if [ -d ./tmp ] ; then
+		sudo rm -rf ./tmp
+	fi
+	
+	if [ -d ./dist ] ; then
+		sudo rm -rf ./dist
+	fi
+	
+	if [ -d ./log ] ; then
+		sudo rm -rf ./log
+	fi
+	
+	if [ -d ./screenshots ] ; then
+		sudo rm -rf ./screenshots
+	fi	
+	
+	mkdir ./tmp/		
+	mkdir ./dist/	
+	mkdir ./log/
+
+	rm -f ~/.local/share/recently-used.xbel
+
+	sudo touch ./tmp/.keep
+	sudo touch ./dist/.keep
+	sudo touch ./log/.keep

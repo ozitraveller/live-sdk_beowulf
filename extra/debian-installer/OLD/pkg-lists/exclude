@@ -1,0 +1,3 @@
+# Exclude the choice between sysvinit or openrc from Devuan vanila.
+choose-init -
+

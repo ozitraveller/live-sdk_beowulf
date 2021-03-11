@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Name=VirtualBox
+GenericName=Virtual Machine
+Type=Application
+Exec=/usr/bin/virtualbox %U
+TryExec=/usr/bin/virtualbox
+Keywords=virtualization;
+MimeType=application/x-virtualbox-vbox;application/x-virtualbox-vbox-extpack;application/x-virtualbox-ovf;application/x-virtualbox-ova;
+Icon=/usr/local/bin/images/virtualbox.svg
+Categories=Emulator;System;
+StartupWMClass=VirtualBox Manager

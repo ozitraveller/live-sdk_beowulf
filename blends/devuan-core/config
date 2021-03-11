@@ -1,0 +1,32 @@
+#!/usr/bin/env zsh
+# config for devuan-core.blend
+
+core_packages+=(
+
+	e2fsprogs
+	less
+	nano	
+)
+
+base_packages+=(
+	
+	locales
+	util-linux-locales
+	#~ console-setup
+	#~ console-data
+	firmware-linux-free
+	os-prober
+	isc-dhcp-client
+	ifupdown
+	wpasupplicant
+	wireless-tools
+	
+)
+
+extra_packages=(
+
+)
+
+purge_packages=(
+
+)
